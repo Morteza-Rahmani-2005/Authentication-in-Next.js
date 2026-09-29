@@ -1,20 +1,61 @@
-import React from "react";
+import { useRouter } from "next/router";
+import React, { useState } from "react";
 
 function Index() {
+  const router = useRouter()
+  const [identifier, setIdentifier] = useState("")
+  const [password, setPassword] = useState("")
+
+  const login = async (e) => {
+    e.preventDefault()
+    const user = {
+      identifier,
+      password
+    }
+    console.log(identifier, password)
+    try {
+      const res = await fetch("api/auth/signin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(user)
+      })
+
+
+      if (res.status === 200) {
+        setIdentifier("")
+        setPassword("")
+
+
+        alert("The user was successfully registered.")
+
+
+        router.replace("/dashboard")
+      } else if (res.status === 422) {
+        alert("Incorrect username or password.")
+      } else if (res.status === 404) {
+        alert("User not found with this information.")
+      }
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
   return (
     <div className="box">
       <h1 align="center">Login Form</h1>
       <form role="form" method="post">
         <div className="inputBox">
-          <input type="text" autoComplete="off" required />
-          <label>Username</label>
+          <input type="text" value={identifier} name="identifier" onChange={(e) => setIdentifier(e.target.value)} autoComplete="off" required />
+          <label>Username | Email</label>
         </div>
         <div className="inputBox">
-          <input type="password" autoComplete="off" required />
+          <input type="password" value={password} name="password" onChange={(e) => setPassword(e.target.value)} autoComplete="off" required />
           <label>Password</label>
         </div>
 
-        <input type="submit" className="register-btn" value="Sign In" />
+        <input type="submit" className="register-btn" value="Sign In" onClick={login} />
       </form>
     </div>
   );

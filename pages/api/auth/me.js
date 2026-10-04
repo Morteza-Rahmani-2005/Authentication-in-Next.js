@@ -1,4 +1,41 @@
-const handler = (req, res) => {
-    // codes
+import connectToDB from "@/configs/db";
+import { verifyToken } from "@/utils/auth";
+import UserModel from "@/models/User"
+
+
+const handler = async (req, res) => {
+    if (req.method !== "GET") {
+        return false
+    }
+
+
+
+    try {
+
+        connectToDB()
+
+        const { token } = req.cookies
+
+        if (!token) {
+            res.status(404).json({ message: "The user has not been authenticated." })
+        }
+
+        const tokenPayload = await verifyToken(token)
+
+        if (!tokenPayload) {
+            res.status(404).json({ message: "The user has not been authenticated." })
+        }
+
+
+        const user = await UserModel.findOne({
+            email: tokenPayload.email
+        }, "firstname lastname role")
+
+
+        console.log(user)
+
+
+        res.status(200).json({ message: "User information successfully retrieved.", user })
+    } catch (err) { return res.status(500).json({ message: "Unknown Internal Server Error !!" }) }
 }
 export default handler;
